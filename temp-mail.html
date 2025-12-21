@@ -172,7 +172,7 @@ async function refreshMail(){
 
     for(const msg of messages){
       let row=document.createElement("tr");
-      row.innerHTML = `<td>New Mail Received! (Click Here 📩)</td>`;
+      row.innerHTML = `<td>New Mail Received! <br> (Click Here 📩 To View Mail)</td>`;
       row.onclick=async ()=>{ 
         const res=await fetch(WORKER_URL+'/message?id='+msg.id+'&token='+token);
         const fullMsg=await res.json();
