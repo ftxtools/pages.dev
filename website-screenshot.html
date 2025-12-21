@@ -231,12 +231,14 @@ async function generateSS(){
       result.style.display="block";
       downloadBtn.style.display="inline-block";
 
-      // Download button functionality
+      // Auto-download when button is clicked
       downloadBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = data.screenshot_url;
-        a.download = (url.replace(/https?:\/\//,'').replace(/[\/:]/g,'_') || 'screenshot') + '.png';
-        a.click();
+        const link = document.createElement('a');
+        link.href = data.screenshot_url;
+        link.download = (url.replace(/https?:\/\//,'').replace(/[\/:]/g,'_') || 'screenshot') + '.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       };
     };
 
@@ -249,4 +251,4 @@ async function generateSS(){
 </script>
 
 </body>
-  </html>
+</html>
