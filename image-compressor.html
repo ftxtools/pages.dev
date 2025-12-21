@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTX Image Compressor</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/FTX_OFFICIAL.PNG">
+
+<style>
+:root {
+  --primary: #7c3aed;
+  --primary-dark: #5b21b6;
+  --secondary: #3b82f6;
+  --bg: #f0f2f5;
+  --card-bg: #fff;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; color: var(--text); }
+header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: #fff; text-align: center; padding: 3rem 1rem; font-size: 2.5rem; font-weight: 800; border-bottom-left-radius: 1.5rem; border-bottom-right-radius: 1.5rem; }
+.container { max-width: 800px; margin: -2rem auto 2rem auto; padding: 0 1rem; position: relative; z-index: 10; }
+.card { background-color: var(--card-bg); padding: 2rem; border-radius: 1rem; box-shadow: var(--shadow); margin-bottom: 2rem; border: 1px solid var(--border); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+h3 { margin-top:0; font-weight:700; color: var(--primary-dark); margin-bottom:1rem; text-align:center; }
+
+#dropArea { width:100%; max-width:400px; height:180px; border:2px dashed var(--primary); border-radius:1rem; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; color: var(--primary-dark); font-weight:600; cursor:pointer; transition: all 0.3s ease; margin:0 auto 1rem auto; background-color:#f9f9ff; }
+#dropArea.hover { background-color:#f3f0ff; border-color: var(--primary-dark); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+#dropArea i { font-size:2.5rem; margin-bottom:0.5rem; }
+#dropArea span { display:block; }
+
+button { padding:0.8rem 1.8rem; border:none; border-radius:50px; cursor:pointer; font-size:1rem; font-weight:600; color:#fff; transition:all 0.3s ease; background-size:200% auto; box-shadow: var(--shadow); margin:0.5rem auto; display:block; }
+button:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.btn-primary { background-image: linear-gradient(to right, var(--primary-dark), var(--primary)); }
+.btn-secondary { background-image: linear-gradient(to right, #3b82f6, #60a5fa); }
+.btn-warning { background-image: linear-gradient(to right, var(--primary-dark), #8b5cf6); color:#fff; }
+.btn-contact { background-image: linear-gradient(to right, #7c3aed, #9d4edd); padding:1rem 2rem; font-size:1.1rem; width:100%; max-width:400px; margin:2rem auto; display:block; text-align:center; }
+
+#preview { max-width:100%; margin-top:1rem; border-radius:1rem; display:none; box-shadow: var(--shadow); transition: transform 0.3s, box-shadow 0.3s; }
+#preview:hover { transform: translateY(-5px) scale(1.02); box-shadow: var(--shadow-hover); }
+
+#status { margin-top:1rem; font-weight:500; text-align:center; color: var(--text-muted); }
+#loading { display:none; margin:0 auto 1rem auto; width:40px; height:40px; border:4px solid #e5e7eb; border-top:4px solid var(--primary); border-radius:50%; animation:spin 1s linear infinite; }
+@keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+
+.copy-toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); background-color: var(--primary); color:#fff; padding:1rem 1.5rem; border-radius:0.5rem; font-weight:500; box-shadow:var(--shadow-hover); display:none; z-index:9999; animation: fadeIn 0.3s forwards, fadeOut 0.3s 2.5s forwards; }
+@keyframes fadeIn { from { opacity:0; transform:translate(-50%,20px);} to { opacity:1; transform:translate(-50%,0);} }
+@keyframes fadeOut { from { opacity:1; transform:translate(-50%,0);} to { opacity:0; transform:translate(-50%,20px);} }
+
+.logo-footer { text-align:center; padding:2.5rem 1rem 1rem 1rem; }
+.logo-footer .logo { height:60px; }
+.logo-footer .logo-title { margin:1rem 0 0.5rem; font-size:0.9rem; color: var(--text-muted); }
+.logo-footer a { color:var(--primary-dark); font-weight:600; text-decoration:none; }
+
+@media(max-width:768px){ .container{margin-top:-1.5rem;} .card{padding:1.5rem;} button{width:100%;} }
+</style>
+</head>
+<body>
+<header>FTX Image Compressor</header>
+
+<div class="container">
+  <div class="card">
+    <h3>Upload or Drag & Drop Your Image</h3>
+    <div id="dropArea"><i class="fas fa-file-upload"></i><span id="dropText">📥 Drag & Drop Image Here or Click to Upload</span></div>
+    <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    <div id="loading"></div>
+    <button class="btn-primary" id="compressBtn">Compress</button>
+    <BR><BR>
+    <img id="preview" alt="Compressed Preview">
+    <BR><BR>
+    <button class="btn-secondary" id="downloadBtn" style="display:none;">Download Compressed</button>
+    <p id="status"></p>
+  </div>
+
+  <div class="contact-section">
+    <a href="https://wa.me/923217614902" target="_blank">
+      <button class="btn-contact"><i class="fab fa-whatsapp"></i> Contact Developer</button>
+    </a>
+  </div>
+</div>
+
+<div id="copyToast" class="copy-toast"><i class="fas fa-check-circle"></i> Action completed!</div>
+
+<div class="logo-footer">
+  <img src="/FTX_OFFICIAL.PNG" alt="FTX Logo" class="logo">
+  <div class="logo-details"><h5 class="logo-title">Discover, and master tech with FTX OFFICIAL.</h5>
+  <a href="/temp-mail">© FTX OFFICIAL</a></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.17/dist/browser-image-compression.js"></script>
+<script>
+const dropArea = document.getElementById('dropArea');
+const imageInput = document.getElementById('imageInput');
+const compressBtn = document.getElementById('compressBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const preview = document.getElementById('preview');
+const status = document.getElementById('status');
+const loading = document.getElementById('loading');
+const dropText = document.getElementById('dropText');
+let selectedFile;
+
+// Click to open file dialog
+dropArea.addEventListener('click', ()=>imageInput.click());
+
+// Drag & Drop
+['dragenter','dragover'].forEach(e => dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.add('hover'); }));
+['dragleave','drop'].forEach(e => dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.remove('hover'); }));
+dropArea.addEventListener('drop', (e)=>handleFiles(e.dataTransfer.files));
+imageInput.addEventListener('change', ()=>handleFiles(imageInput.files));
+
+function handleFiles(files){
+  if(!files[0]) return;
+  selectedFile = files[0];
+  compressBtn.style.display="block";
+  downloadBtn.style.display="none";
+  preview.style.display="none";
+  status.innerText="";
+  dropText.innerHTML = `<i class="fas fa-check-circle" style="color:#7c3aed;"></i> Upload Successful: ${selectedFile.name}`;
+}
+
+// Compress Logic
+compressBtn.addEventListener('click', async ()=>{
+  if(!selectedFile) return;
+  loading.style.display="block";
+  status.innerText = "Compressing...";
+  compressBtn.disabled = true;
+  const options = { maxSizeMB: 0.1, maxWidthOrHeight: 2000, useWebWorker: true };
+  try{
+    const compressedFile = await imageCompression(selectedFile, options);
+    loading.style.display="none";
+    compressBtn.disabled = false;
+    status.innerText = `Original: ${(selectedFile.size/1024).toFixed(2)} KB | Compressed: ${(compressedFile.size/1024).toFixed(2)} KB`;
+    const compressedBlobUrl = URL.createObjectURL(compressedFile);
+    preview.src = compressedBlobUrl; preview.style.display="block";
+    downloadBtn.style.display="block";
+    downloadBtn.onclick = ()=>{ const a=document.createElement('a'); a.href=compressedBlobUrl; a.download='compressed_image.jpg'; a.click(); };
+  }catch(err){ loading.style.display="none"; compressBtn.disabled=false; status.innerText = "Compression error: "+err.message; }
+});
+</script>
+</body>
+</html>
