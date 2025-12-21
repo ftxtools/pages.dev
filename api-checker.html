@@ -68,12 +68,15 @@ button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);}
   color:var(--warning);
   font-weight:600;
 }
+
 .contact-section{text-align:center;margin:2rem 0;}
 .btn-contact{background:linear-gradient(to right,#7c3aed,#9d4edd);padding:1rem 2rem;font-size:1.1rem;}
+
 .logo-footer{text-align:center;padding:2.5rem 1rem 1rem;}
 .logo-footer img{height:60px;}
 .logo-footer h5{margin:.8rem 0;color:var(--text-muted);font-weight:500;}
 .logo-footer a{color:var(--primary-dark);font-weight:600;text-decoration:none;}
+
 @media(max-width:768px){header{font-size:2rem}}
 </style>
 </head>
@@ -87,9 +90,8 @@ button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);}
   <div class="card">
     <h2 style="text-align:center;">Enter API URL</h2>
 
-    <!-- Top note box always visible -->
     <div class="note-box">
-      ⚠️ Note: The API URL must include the full URL parameter (e.g., <code>https://your-api.com?url=https://example.com</code>) to check if the API is working.
+      ⚠️ Note: Paste the full API URL with parameters if required (e.g., <code>https://example.com/api?url=https://site.com</code>).
     </div>
 
     <div class="input-wrapper">
@@ -132,8 +134,6 @@ button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);}
 </div>
 
 <script>
-const API_CHECKER = "https://api-checker.ftxofficial.workers.dev/?apiurl=";
-
 async function checkAPI() {
   const url = document.getElementById("apiInput").value.trim();
   const loader = document.getElementById("loader");
@@ -143,46 +143,33 @@ async function checkAPI() {
   result.style.display = "none";
   result.innerHTML = "";
 
-  if(!url){ 
-    alert("⚠ Please enter a valid API URL."); 
-    loader.style.display="none";
-    return; 
+  if (!url) {
+    alert("⚠ Please enter a valid API URL.");
+    loader.style.display = "none";
+    return;
   }
 
   try {
-    const res = await fetch(API_CHECKER + encodeURIComponent(url));
-    const data = await res.json();
-    loader.style.display = "none";
+    const start = performance.now();
+    const res = await fetch(url, { method: 'GET', mode: 'cors' });
+    const end = performance.now();
+    const time = Math.round(end - start) + " ms";
 
-    if(data.status !== "success" || data.api_working === false){
-      const section = document.createElement("div");
-      section.classList.add("result-section");
+    const status = res.status;
+    let data;
 
-      const h3 = document.createElement("h3");
-      h3.textContent = "API Check Failed";
-      section.appendChild(h3);
+    try { data = await res.json(); } 
+    catch { data = { message: "Response is not JSON" }; }
 
-      const hr = document.createElement("hr");
-      section.appendChild(hr);
-
-      const p = document.createElement("p");
-      p.textContent = "⚠ The API returned an error or is not working. Please Check Api and Parameter Url.";
-      section.appendChild(p);
-
-      result.appendChild(section);
-      result.style.display = "block";
-      return; // no bottom note
-    }
-
-    // Display successful API response
     const fields = {
-      "Request URL": data.request_url,
-      "API Working": data.api_working ? "✅ Yes" : "❌ No",
-      "API Status": data.api_status,
-      "Response Time": data.response_time
+      "API URL": url,
+      "API Status": status,
+      "API Working": status >= 200 && status < 300 ? "✅ Yes" : "❌ No",
+      "Response Time": time,
+      "Response Preview": JSON.stringify(data).substring(0, 300) + (JSON.stringify(data).length > 300 ? "..." : "")
     };
 
-    for(const key in fields){
+    for (const key in fields) {
       const section = document.createElement("div");
       section.classList.add("result-section");
 
@@ -202,10 +189,26 @@ async function checkAPI() {
 
     result.style.display = "block";
 
-  } catch(err){
-    loader.style.display = "none";
-    alert("⚠ Error checking API. Please try again.");
+  } catch (err) {
+    const section = document.createElement("div");
+    section.classList.add("result-section");
+
+    const h3 = document.createElement("h3");
+    h3.textContent = "API Check Failed";
+    section.appendChild(h3);
+
+    const hr = document.createElement("hr");
+    section.appendChild(hr);
+
+    const p = document.createElement("p");
+    p.textContent = "⚠ Unable to fetch the API. It may not support CORS or the URL is invalid.";
+    section.appendChild(p);
+
+    result.appendChild(section);
+    result.style.display = "block";
     console.error(err);
+  } finally {
+    loader.style.display = "none";
   }
 }
 </script>
