@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTX Site Screenshot</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;}
+:root{
+  --primary:#7c3aed;
+  --primary-dark:#5b21b6;
+  --bg:#f0f2f5;
+  --card-bg:#fff;
+  --text:#1f2937;
+  --text-muted:#6b7280;
+  --border:#e5e7eb;
+  --shadow:0 4px 12px rgba(0,0,0,0.08);
+  --shadow-hover:0 8px 20px rgba(0,0,0,0.12);
+}
+body{
+  font-family:'Inter',sans-serif;
+  background:var(--bg);
+  margin:0;
+  color:var(--text);
+}
+header{
+  background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+  color:#fff;
+  text-align:center;
+  padding:3rem 1rem;
+  font-size:2.5rem;
+  font-weight:800;
+  border-radius:0 0 1.5rem 1.5rem;
+}
+.container{
+  max-width:900px;
+  margin:-2rem auto 2rem;
+  padding:0 1rem;
+}
+.card{
+  background:var(--card-bg);
+  padding:2.5rem 2rem;
+  border-radius:1.2rem;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.input-wrapper{
+  display:flex;
+  justify-content:center;
+  margin:2rem 0;
+}
+.input-box{
+  width:100%;
+  max-width:520px;
+  padding:0.75rem;
+  border:1px solid var(--border);
+  border-radius:1rem;
+}
+.input-box input{
+  width:100%;
+  padding:1rem 1.2rem;
+  font-size:1rem;
+  border:2px solid var(--border);
+  border-radius:0.75rem;
+  text-align:center;
+  background:#f9fafb;
+}
+.input-box input:focus{
+  outline:none;
+  border-color:var(--primary-dark);
+}
+button{
+  padding:0.9rem 2.2rem;
+  border:none;
+  border-radius:50px;
+  font-weight:600;
+  color:#fff;
+  cursor:pointer;
+  background:linear-gradient(to right,var(--primary-dark),var(--primary));
+  box-shadow:var(--shadow);
+  margin-top:1rem;
+}
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-hover);
+}
+
+.loader{
+  display:none;
+  margin-top:1.5rem;
+}
+.loader div{
+  width:40px;
+  height:40px;
+  border:4px solid #e5e7eb;
+  border-top:4px solid var(--primary);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.result{
+  margin-top:2rem;
+}
+.result img{
+  max-width:100%;
+  border-radius:1rem;
+  box-shadow:var(--shadow-hover);
+}
+.download-btn{
+  display:none;
+  margin-top:1rem;
+  background:linear-gradient(to right,var(--primary-dark),var(--primary));
+}
+
+.contact-section{
+  text-align:center;
+  margin:2rem 0;
+}
+.btn-contact{
+  background:linear-gradient(to right,var(--primary-dark),var(--primary));
+  padding:1rem 2rem;
+  font-size:1.1rem;
+}
+
+.logo-footer{
+  text-align:center;
+  padding:2.5rem 1rem 1rem;
+}
+.logo-footer img{height:60px;}
+.logo-footer h5{
+  margin:.8rem 0;
+  color:var(--text-muted);
+  font-weight:500;
+}
+.logo-footer a{
+  color:var(--primary-dark);
+  font-weight:600;
+  text-decoration:none;
+}
+@media(max-width:768px){header{font-size:2rem}}
+</style>
+</head>
+
+<body>
+
+<header>FTX Website Screenshot</header>
+
+<div class="container">
+  <div class="card">
+
+    <h2>Paste Website URL</h2>
+
+    <div class="input-wrapper">
+      <div class="input-box">
+        <input id="siteUrl" placeholder="https://example.com">
+      </div>
+    </div>
+
+    <button onclick="generateSS()">
+      <i class="fas fa-camera"></i> Capture Screenshot
+    </button>
+
+    <div class="loader" id="loader">
+      <div></div>
+      <p>Generating screenshot...</p>
+    </div>
+
+    <div class="result" id="result" style="display:none;">
+      <img id="ssImage" alt="Website Screenshot">
+      <button id="downloadBtn" class="download-btn">
+        <i class="fas fa-download"></i> Download Screenshot
+      </button>
+    </div>
+
+  </div>
+
+  <div class="contact-section">
+    <a href="https://wa.me/923217614902" target="_blank">
+      <button class="btn-contact">
+        <i class="fab fa-whatsapp"></i> Contact Developer
+      </button>
+    </a>
+  </div>
+</div>
+
+<div class="logo-footer">
+  <img src="/FTX_OFFICIAL.PNG">
+  <h5>Discover, build and master tech with FTX OFFICIAL.</h5>
+  <a href="/">© FTX OFFICIAL</a>
+</div>
+
+<script>
+const API = "https://site-ss.ftxofficial.workers.dev/?url=";
+
+async function generateSS(){
+  const url = document.getElementById("siteUrl").value.trim();
+  if(!url){
+    alert("Please paste website URL");
+    return;
+  }
+
+  const loader = document.getElementById("loader");
+  const result = document.getElementById("result");
+  const img = document.getElementById("ssImage");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  loader.style.display="block";
+  result.style.display="none";
+  downloadBtn.style.display="none";
+
+  try{
+    const res = await fetch(API + encodeURIComponent(url));
+    const data = await res.json();
+
+    if(data.status !== "success"){
+      alert("Screenshot failed");
+      loader.style.display="none";
+      return;
+    }
+
+    img.src = data.screenshot_url;
+    img.onload = () => {
+      loader.style.display="none";
+      result.style.display="block";
+      downloadBtn.style.display="inline-block";
+
+      // Download button functionality
+      downloadBtn.onclick = () => {
+        const a = document.createElement('a');
+        a.href = data.screenshot_url;
+        a.download = (url.replace(/https?:\/\//,'').replace(/[\/:]/g,'_') || 'screenshot') + '.png';
+        a.click();
+      };
+    };
+
+  }catch(err){
+    loader.style.display="none";
+    alert("Error generating screenshot");
+    console.error(err);
+  }
+}
+</script>
+
+</body>
+  </html>
