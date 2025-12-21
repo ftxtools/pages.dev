@@ -211,9 +211,9 @@ async function generateSS(){
   const img = document.getElementById("ssImage");
   const downloadBtn = document.getElementById("downloadBtn");
 
-  loader.style.display="block";
-  result.style.display="none";
-  downloadBtn.style.display="none";
+  loader.style.display = "block";
+  result.style.display = "none";
+  downloadBtn.style.display = "none";
 
   try{
     const res = await fetch(API + encodeURIComponent(url));
@@ -221,29 +221,27 @@ async function generateSS(){
 
     if(data.status !== "success"){
       alert("Screenshot failed");
-      loader.style.display="none";
+      loader.style.display = "none";
       return;
     }
 
     img.src = data.screenshot_url;
     img.onload = () => {
-      loader.style.display="none";
-      result.style.display="block";
-      downloadBtn.style.display="inline-block";
+      loader.style.display = "none";
+      result.style.display = "block";
+      downloadBtn.style.display = "inline-block";
 
-      // Auto-download when button is clicked
+      // ✅ Download button: direct auto-download on click
       downloadBtn.onclick = () => {
-        const link = document.createElement('a');
-        link.href = data.screenshot_url;
-        link.download = (url.replace(/https?:\/\//,'').replace(/[\/:]/g,'_') || 'screenshot') + '.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const a = document.createElement('a');
+        a.href = data.screenshot_url;
+        a.download = 'FTX_Website_SS.png'; // Fixed filename
+        a.click();
       };
     };
 
   }catch(err){
-    loader.style.display="none";
+    loader.style.display = "none";
     alert("Error generating screenshot");
     console.error(err);
   }
