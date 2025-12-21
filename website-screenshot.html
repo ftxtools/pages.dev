@@ -199,7 +199,7 @@ button:hover{
 <script>
 const API = "https://site-ss.ftxofficial.workers.dev/?url=";
 
-async function generateSS(){
+async function generateSS() {
   const url = document.getElementById("siteUrl").value.trim();
   if(!url){
     alert("Please paste website URL");
@@ -215,11 +215,11 @@ async function generateSS(){
   result.style.display = "none";
   downloadBtn.style.display = "none";
 
-  try{
+  try {
     const res = await fetch(API + encodeURIComponent(url));
     const data = await res.json();
 
-    if(data.status !== "success"){
+    if(data.status !== "success") {
       alert("Screenshot failed");
       loader.style.display = "none";
       return;
@@ -231,24 +231,28 @@ async function generateSS(){
       result.style.display = "block";
       downloadBtn.style.display = "inline-block";
 
-      // ✅ Download button: automatic download on click
+      // ✅ Fully working download button
       downloadBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = data.screenshot_url;
-        a.download = 'FTX_Website_SS.png'; // fixed filename
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        fetch(data.screenshot_url)
+          .then(res => res.blob())
+          .then(blob => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'FTX_Website_SS.png'; // fixed filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          })
+          .catch(err => alert("Download failed"));
       };
     };
 
-  }catch(err){
+  } catch(err) {
     loader.style.display = "none";
     alert("Error generating screenshot");
     console.error(err);
   }
 }
 </script>
-
 </body>
 </html>
