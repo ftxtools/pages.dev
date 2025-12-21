@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FTX SEO EXTRACTOR</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/FTX_OFFICIAL.PNG"> 
+<style>
+*{box-sizing:border-box;}
+:root{
+  --primary:#7c3aed;
+  --primary-dark:#5b21b6;
+  --bg:#f0f2f5;
+  --card-bg:#fff;
+  --text:#1f2937;
+  --text-muted:#6b7280;
+  --border:#e5e7eb;
+  --shadow:0 4px 12px rgba(0,0,0,0.08);
+  --shadow-hover:0 8px 20px rgba(0,0,0,0.12);
+  --success:#10b981;
+  --error:#ef4444;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);margin:0;color:var(--text);}
+header{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;text-align:center;padding:3rem 1rem;font-size:2.5rem;font-weight:800;border-radius:0 0 1.5rem 1.5rem;}
+.container{max-width:800px;margin:-2rem auto 2rem;padding:0 1rem;}
+.card{background:var(--card-bg);padding:2.5rem 2rem;border-radius:1.2rem;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:2rem;overflow:hidden;}
+.input-wrapper{display:flex;justify-content:center;margin:2rem 0;width:100%;}
+.input-box{width:100%;max-width:520px;padding:0.75rem;background:#fff;border:1px solid var(--border);border-radius:1rem;}
+.input-box input{width:100%;padding:1rem 1.2rem;font-size:1rem;border:2px solid var(--border);border-radius:0.75rem;text-align:center;background:#f9fafb;}
+.input-box input:focus{outline:none;border-color:var(--primary-dark);}
+.btn-group{display:flex;justify-content:center;margin-top:1.5rem;}
+button{padding:0.9rem 2rem;border:none;border-radius:50px;font-weight:600;color:#fff;cursor:pointer;background:linear-gradient(to right,var(--primary-dark),var(--primary));box-shadow:var(--shadow);}
+button:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover);}
+.loader-container{display:none;text-align:center;margin-top:1.5rem;}
+.loader{width:40px;height:40px;border:4px solid #e5e7eb;border-top:4px solid var(--primary);border-radius:50%;animation:spin 1s linear infinite;margin:auto;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== PRETTY REPORT STYLE ===== */
+.result{margin-top:1.5rem;}
+.result-section{margin-bottom:1.5rem;}
+.result-section h3{
+  margin-bottom:0.3rem;
+  color:var(--primary-dark);
+  font-weight:700;
+}
+.result-section hr{
+  border:none;
+  border-bottom:2px solid var(--border);
+  margin-bottom:0.7rem;
+}
+.result-section p{
+  margin:0.3rem 0;
+  color:var(--text);
+  font-weight:500;
+}
+
+.contact-section{text-align:center;margin:2rem 0;}
+.btn-contact{background:linear-gradient(to right,#7c3aed,#9d4edd);padding:1rem 2rem;font-size:1.1rem;}
+
+.logo-footer{text-align:center;padding:2.5rem 1rem 1rem;}
+.logo-footer img{height:60px;}
+.logo-footer h5{margin:.8rem 0;color:var(--text-muted);font-weight:500;}
+.logo-footer a{color:var(--primary-dark);font-weight:600;text-decoration:none;}
+
+@media(max-width:768px){header{font-size:2rem}}
+</style>
+</head>
+
+<body>
+
+<header>FTX SEO Extractor</header>
+
+<div class="container">
+
+  <div class="card">
+    <h2 style="text-align:center;">Paste Website URL</h2>
+
+    <div class="input-wrapper">
+      <div class="input-box">
+        <input id="siteUrl" placeholder="https://example.com">
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <button onclick="fetchSEO()">
+        <i class="fas fa-search"></i> Analyze
+      </button>
+    </div>
+
+    <div class="loader-container" id="loader">
+      <div class="loader"></div>
+      <p>Fetching SEO data...</p>
+    </div>
+
+    <div class="result" id="result" style="display:none;">
+
+      <div class="result-section" id="secSection">
+        <h3>SECURITY</h3>
+        <hr>
+        <p id="securityStatus"></p>
+      </div>
+
+      <div class="result-section" id="titleSection">
+        <h3>Title</h3>
+        <hr>
+        <p id="seoTitle"></p>
+      </div>
+
+      <div class="result-section" id="descSection">
+        <h3>Description</h3>
+        <hr>
+        <p id="seoDesc"></p>
+      </div>
+
+      <div class="result-section" id="keywordsSection">
+        <h3>Keywords</h3>
+        <hr>
+        <p id="seoKeywords"></p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="contact-section">
+    <a href="https://wa.me/923217614902" target="_blank">
+      <button class="btn-contact">
+        <i class="fab fa-whatsapp"></i> Contact Developer
+      </button>
+    </a>
+  </div>
+
+</div>
+
+<div class="logo-footer">
+  <img src="/FTX_OFFICIAL.PNG" alt="FTX OFFICIAL">
+  <h5>Discover, build and master tech with FTX OFFICIAL.</h5>
+  <a href="/">© FTX OFFICIAL</a>
+</div>
+
+<script>
+const SEO_API = "https://seo-extractor.ftxofficial.workers.dev/?url=";
+
+async function fetchSEO(){
+  const url = document.getElementById("siteUrl").value.trim();
+  if(!url){ alert("Website URL paste karo"); return; }
+
+  document.getElementById("loader").style.display="block";
+  document.getElementById("result").style.display="none";
+
+  try{
+    const res = await fetch(SEO_API + encodeURIComponent(url));
+    const data = await res.json();
+
+    const secEl = document.getElementById("securityStatus");
+    const titleEl = document.getElementById("seoTitle");
+    const descEl = document.getElementById("seoDesc");
+    const keywordsEl = document.getElementById("seoKeywords");
+
+    if(data.protected){
+      // Security TRUE
+      secEl.textContent = "TRUE";
+      secEl.style.color = "#10b981"; // green
+      titleEl.textContent = "This website is protected";
+      titleEl.style.color = "#ef4444"; // red
+      descEl.textContent = "N/A";
+      keywordsEl.textContent = "N/A";
+    } else {
+      // Security FALSE
+      secEl.textContent = "FALSE";
+      secEl.style.color = "#ef4444"; // red
+      titleEl.textContent = data.title || "No Title";
+      titleEl.style.color = "#1f2937"; // normal
+      descEl.textContent = data.description || "No Description";
+      keywordsEl.textContent = data.keywords || "None";
+    }
+
+    document.getElementById("result").style.display="block";
+
+  }catch(e){
+    alert("SEO fetch failed");
+    console.error(e);
+  }finally{
+    document.getElementById("loader").style.display="none";
+  }
+}
+</script>
+
+</body>
+</html>
