@@ -231,12 +231,14 @@ async function generateSS(){
       result.style.display = "block";
       downloadBtn.style.display = "inline-block";
 
-      // ✅ Download button: direct auto-download on click
+      // ✅ Download button: automatic download on click
       downloadBtn.onclick = () => {
         const a = document.createElement('a');
         a.href = data.screenshot_url;
-        a.download = 'FTX_Website_SS.png'; // Fixed filename
+        a.download = 'FTX_Website_SS.png'; // fixed filename
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
       };
     };
 
