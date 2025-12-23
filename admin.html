@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <style>
+/* ❌ NO DESIGN CHANGE */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Inter:wght@400;600&display=swap');
 :root{--bg-base:#121212;--text-primary:#e0e0e0}
 body{background:var(--bg-base);color:var(--text-primary);font-family:Inter;margin:0}
@@ -85,183 +86,147 @@ button{border-radius:12px!important}
 
 <footer class="site-footer">© 2025 FTX OFFICIAL</footer>
 
-<!-- 🔥 Firebase only for DATA -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
 <script>
-/* ===============================
-   🔐 MANUAL ADMIN LOGIN
-================================ */
-const ADMIN_EMAIL = "ftx@official.com";
-const ADMIN_PASS  = "ftx_official";
+// ⚡ MANUAL LOGIN
+const correctEmail = "ftx@official.com";
+const correctPassword = "ftx_official";
 
 const loginScreen = document.getElementById("login-screen");
-const dashboard   = document.getElementById("dashboard");
-const logoutBtn   = document.getElementById("logout-btn");
+const dashboard = document.getElementById("dashboard");
+const logoutBtn = document.getElementById("logout-btn");
 
-const emailInput    = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-
-/* SESSION CHECK */
-if (localStorage.getItem("ftx_admin_login") === "1") {
-  showDashboard();
-}
-
-/* LOGIN FUNCTION */
-function login() {
-  const email = emailInput.value.trim();
-  const pass  = passwordInput.value.trim();
-
-  if (!email || !pass) {
-    alert("❌ Email aur Password dono likho");
-    return;
-  }
-
-  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
-    localStorage.setItem("ftx_admin_login", "1");
-    alert("✅ Login Successful");
-    showDashboard();
-  } else {
-    alert("❌ Wrong Email or Password");
-  }
-}
-
-/* SHOW DASHBOARD */
-function showDashboard() {
-  loginScreen.style.display = "none";
-  dashboard.style.display   = "block";
-  logoutBtn.style.display  = "inline-block";
-  loadTools();
-  loadVisitors();
-}
-
-/* LOGOUT */
-logoutBtn.onclick = () => {
-  localStorage.removeItem("ftx_admin_login");
-  location.reload();
-};
-
-/* ===============================
-   🔥 FIREBASE (DATA ONLY)
-================================ */
-firebase.initializeApp({
-  apiKey: "AIzaSyC2rYhRBZahuBT2XFZl1qq4Ffti-7MV-Is",
-  databaseURL: "https://ftx-official-default-rtdb.firebaseio.com"
-});
-const db = firebase.database();
-
-/* ELEMENTS */
-const toolName  = document.getElementById("tool-name");
-const toolImg   = document.getElementById("tool-img");
-const toolLink  = document.getElementById("tool-link");
-const toolList  = document.getElementById("tool-list");
-
+const toolList = document.getElementById("tool-list");
 const totalTools = document.getElementById("total-tools");
 const activeTools = document.getElementById("active-tools");
 const deactivatedTools = document.getElementById("deactivated-tools");
-const totalVisitors = document.getElementById("total-visitors");
 
-const visitorFilter = document.getElementById("visitor-filter");
+let tools = [];
+let visitorChartInstance = null;
+let allVisitors = [];
 const visitorCanvas = document.getElementById("visitorChart");
 
-/* ===============================
-   🧰 TOOLS
-================================ */
+// 👤 LOGIN FUNCTION
+function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if(email === correctEmail && password === correctPassword) {
+    loginScreen.style.display = "none";
+    dashboard.style.display = "block";
+    logoutBtn.style.display = "inline-block";
+    loadTools();
+    loadVisitors();
+  } else {
+    alert("Invalid credentials! Please enter correct email & password.");
+  }
+}
+
+// 🔒 LOGOUT FUNCTION
+logoutBtn.onclick = () => {
+  dashboard.style.display = "none";
+  loginScreen.style.display = "block";
+  logoutBtn.style.display = "none";
+};
+
+// 🛠 TOOLS MANAGER
 function loadTools() {
-  db.ref("tools").on("value", snap => {
-    let tools = [];
+  firebase.database().ref("tools").on("value", snap => {
+    tools = [];
     toolList.innerHTML = "";
     snap.forEach(c => {
-      const t = c.val();
-      t.key = c.key;
+      const t = c.val(); t.key = c.key;
       tools.push(t);
-
-      toolList.innerHTML += `
-      <div class="tool-item">
-        <span>${t.name}</span>
-        <div>
-          <button class="btn btn-sm btn-${t.status ? 'warning' : 'success'}"
-            onclick="toggleStatus('${t.key}', ${t.status})">
-            ${t.status ? 'Deactivate' : 'Activate'}
-          </button>
-          <button class="btn btn-sm btn-danger ms-1"
-            onclick="deleteTool('${t.key}')">Delete</button>
-        </div>
-      </div>`;
+      renderToolItem(t);
     });
-
-    totalTools.innerText = tools.length;
-    activeTools.innerText = tools.filter(t => t.status).length;
-    deactivatedTools.innerText = tools.filter(t => !t.status).length;
+    updateToolStats();
   });
+}
+
+function renderToolItem(t) {
+  const div = document.createElement("div");
+  div.className = "tool-item";
+  div.innerHTML = `
+    <span>${t.name}</span>
+    <div>
+      <button class="btn btn-sm btn-${t.status?'warning':'success'}" onclick="toggleStatus('${t.key}',${t.status})">
+        ${t.status?'Deactivate':'Activate'}
+      </button>
+      <button class="btn btn-sm btn-danger ms-1" onclick="deleteTool('${t.key}')">Delete</button>
+    </div>
+  `;
+  toolList.appendChild(div);
 }
 
 function addTool() {
-  if (!toolName.value || !toolImg.value || !toolLink.value) {
-    alert("❌ Sab fields fill karo");
-    return;
+  const name = document.getElementById("tool-name").value.trim();
+  const img = document.getElementById("tool-img").value.trim();
+  const link = document.getElementById("tool-link").value.trim();
+  if(!name || !img || !link) return alert("Fill all fields!");
+
+  firebase.database().ref("tools").push({ name, img, link, status: true });
+  document.getElementById("tool-name").value = "";
+  document.getElementById("tool-img").value = "";
+  document.getElementById("tool-link").value = "";
+}
+
+function toggleStatus(key, status) {
+  firebase.database().ref("tools/" + key).update({ status: !status });
+}
+
+function deleteTool(key) {
+  if(confirm("Delete this tool?")) {
+    firebase.database().ref("tools/" + key).remove();
   }
-
-  db.ref("tools").push({
-    name: toolName.value,
-    img: toolImg.value,
-    link: toolLink.value,
-    status: true
-  });
-
-  toolName.value = toolImg.value = toolLink.value = "";
 }
 
-function toggleStatus(k, s) {
-  db.ref("tools/" + k).update({ status: !s });
-}
-function deleteTool(k) {
-  if (confirm("Delete tool?")) db.ref("tools/" + k).remove();
+function updateToolStats() {
+  totalTools.innerText = tools.length;
+  activeTools.innerText = tools.filter(t => t.status).length;
+  deactivatedTools.innerText = tools.filter(t => !t.status).length;
 }
 
-/* ===============================
-   📈 VISITORS
-================================ */
-let visitorChart, allVisitors = [];
-
+// 📈 VISITORS
 function loadVisitors() {
-  db.ref("visitors").on("value", snap => {
+  firebase.database().ref("visitors").on("value", snap => {
     allVisitors = [];
-    snap.forEach(c =>
-      allVisitors.push({ date: c.key, count: c.val().count })
-    );
-    totalVisitors.innerText =
-      allVisitors.reduce((a, b) => a + b.count, 0);
+    snap.forEach(c => allVisitors.push({ date: c.key, count: c.val().count }));
+    document.getElementById("total-visitors").innerText = allVisitors.reduce((a,b)=>a+b.count,0);
     drawChart(7);
   });
 }
 
 function drawChart(days) {
   const now = new Date();
-  const data = allVisitors.filter(
-    d => (now - new Date(d.date)) / 86400000 <= days
-  );
+  const data = allVisitors.filter(d => (now - new Date(d.date)) / 86400000 <= days);
 
-  if (visitorChart) visitorChart.destroy();
+  if(visitorChartInstance) visitorChartInstance.destroy();
 
-  visitorChart = new Chart(visitorCanvas, {
+  visitorChartInstance = new Chart(visitorCanvas, {
     type: "line",
     data: {
       labels: data.map(d => d.date),
       datasets: [{
+        label: "Visitors",
         data: data.map(d => d.count),
         borderColor: "#8b5cf6",
-        fill: false
+        fill: false,
+        tension: 0.3
       }]
-    }
+    },
+    options: { responsive: true, plugins: { legend: { display: true } } }
   });
 }
 
 function updateChartFilter() {
-  drawChart(visitorFilter.value);
+  const val = parseInt(document.getElementById("visitor-filter").value);
+  drawChart(val);
 }
 </script>
+
 </body>
-</html>
+      </html>
