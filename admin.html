@@ -85,30 +85,57 @@ button{border-radius:12px!important}
 
 <footer class="site-footer">© 2025 FTX OFFICIAL</footer>
 
-<!-- ✅ FIREBASE v8 (STABLE) -->
+<!-- 🔥 Firebase only for DATA -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-firebase.initializeApp({
-  apiKey:"AIzaSyC2rYhRBZahuBT2XFZl1qq4Ffti-7MV-Is",
-  authDomain:"ftx-official.firebaseapp.com",
-  databaseURL:"https://ftx-official-default-rtdb.firebaseio.com",
-  projectId:"ftx-official",
-  appId:"1:393254686360:web:33c2e3bcd5cf9f23cacaed"
-});
+/* 🔐 MANUAL LOGIN CREDENTIALS */
+const ADMIN_EMAIL = "ftx@official.com";
+const ADMIN_PASS  = "ftx_official";
 
-const auth = firebase.auth();
-const db   = firebase.database();
-
-/* ELEMENTS */
+/* LOGIN STATE */
 const loginScreen = document.getElementById("login-screen");
 const dashboard   = document.getElementById("dashboard");
 const logoutBtn   = document.getElementById("logout-btn");
 
+/* CHECK SESSION */
+if(localStorage.getItem("ftx_admin")==="true"){
+  showDashboard();
+}
+
+function login(){
+  if(email.value===ADMIN_EMAIL && password.value===ADMIN_PASS){
+    localStorage.setItem("ftx_admin","true");
+    showDashboard();
+  }else{
+    alert("Invalid Admin Credentials");
+  }
+}
+
+function showDashboard(){
+  loginScreen.style.display="none";
+  dashboard.style.display="block";
+  logoutBtn.style.display="inline-block";
+  loadTools();
+  loadVisitors();
+}
+
+logoutBtn.onclick=()=>{
+  localStorage.removeItem("ftx_admin");
+  location.reload();
+};
+
+/* 🔥 FIREBASE (DATA ONLY) */
+firebase.initializeApp({
+  apiKey:"AIzaSyC2rYhRBZahuBT2XFZl1qq4Ffti-7MV-Is",
+  databaseURL:"https://ftx-official-default-rtdb.firebaseio.com",
+});
+
+const db = firebase.database();
+
+/* ELEMENTS */
 const toolList = document.getElementById("tool-list");
 const totalTools = document.getElementById("total-tools");
 const activeTools = document.getElementById("active-tools");
@@ -116,20 +143,6 @@ const deactivatedTools = document.getElementById("deactivated-tools");
 const totalVisitors = document.getElementById("total-visitors");
 const visitorFilter = document.getElementById("visitor-filter");
 const visitorCanvas = document.getElementById("visitorChart");
-
-/* AUTH */
-auth.onAuthStateChanged(user=>{
-  loginScreen.style.display = user ? "none" : "block";
-  dashboard.style.display   = user ? "block" : "none";
-  logoutBtn.style.display   = user ? "inline-block" : "none";
-  if(user){ loadTools(); loadVisitors(); }
-});
-
-function login(){
-  auth.signInWithEmailAndPassword(email.value,password.value)
-  .catch(e=>alert(e.message));
-}
-logoutBtn.onclick=()=>auth.signOut();
 
 /* TOOLS */
 function loadTools(){
@@ -187,14 +200,11 @@ function drawChart(days){
   if(visitorChart) visitorChart.destroy();
   visitorChart=new Chart(visitorCanvas,{
     type:"line",
-    data:{
-      labels:data.map(d=>d.date),
-      datasets:[{data:data.map(d=>d.count),borderColor:"#8b5cf6",fill:false}]
-    }
+    data:{labels:data.map(d=>d.date),datasets:[{data:data.map(d=>d.count),borderColor:"#8b5cf6",fill:false}]}
   });
 }
 function updateChartFilter(){drawChart(visitorFilter.value);}
 </script>
 
 </body>
-      </html>
+</html>
