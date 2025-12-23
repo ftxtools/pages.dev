@@ -9,7 +9,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <style>
-/* ❌ NO DESIGN CHANGE */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Inter:wght@400;600&display=swap');
 :root{--bg-base:#121212;--text-primary:#e0e0e0}
 body{background:var(--bg-base);color:var(--text-primary);font-family:Inter;margin:0}
@@ -86,34 +85,44 @@ button{border-radius:12px!important}
 
 <footer class="site-footer">© 2025 FTX OFFICIAL</footer>
 
+<!-- ✅ FIREBASE v8 (STABLE) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
 
 <script>
-/* 🔥 FIREBASE */
 firebase.initializeApp({
   apiKey:"AIzaSyC2rYhRBZahuBT2XFZl1qq4Ffti-7MV-Is",
   authDomain:"ftx-official.firebaseapp.com",
-  databaseURL:"https://ftx-official-default-rtdb.firebaseio.com/",
+  databaseURL:"https://ftx-official-default-rtdb.firebaseio.com",
   projectId:"ftx-official",
   appId:"1:393254686360:web:33c2e3bcd5cf9f23cacaed"
 });
 
-const auth=firebase.auth();
-const db=firebase.database();
+const auth = firebase.auth();
+const db   = firebase.database();
 
-const loginScreen=document.getElementById("login-screen");
-const dashboard=document.getElementById("dashboard");
-const logoutBtn=document.getElementById("logout-btn");
+/* ELEMENTS */
+const loginScreen = document.getElementById("login-screen");
+const dashboard   = document.getElementById("dashboard");
+const logoutBtn   = document.getElementById("logout-btn");
+
+const toolList = document.getElementById("tool-list");
+const totalTools = document.getElementById("total-tools");
+const activeTools = document.getElementById("active-tools");
+const deactivatedTools = document.getElementById("deactivated-tools");
+const totalVisitors = document.getElementById("total-visitors");
+const visitorFilter = document.getElementById("visitor-filter");
+const visitorCanvas = document.getElementById("visitorChart");
 
 /* AUTH */
 auth.onAuthStateChanged(user=>{
-  loginScreen.style.display=user?"none":"block";
-  dashboard.style.display=user?"block":"none";
-  logoutBtn.style.display=user?"inline-block":"none";
-  if(user){loadTools();loadVisitors();}
+  loginScreen.style.display = user ? "none" : "block";
+  dashboard.style.display   = user ? "block" : "none";
+  logoutBtn.style.display   = user ? "inline-block" : "none";
+  if(user){ loadTools(); loadVisitors(); }
 });
 
 function login(){
@@ -122,36 +131,31 @@ function login(){
 }
 logoutBtn.onclick=()=>auth.signOut();
 
-/* TOOLS – 🔗 PUBLIC LINKED (status) */
-let tools=[];
+/* TOOLS */
 function loadTools(){
   db.ref("tools").on("value",snap=>{
-    tools=[];
-    tool-list.innerHTML="";
+    let tools=[];
+    toolList.innerHTML="";
     snap.forEach(c=>{
       const t=c.val(); t.key=c.key;
       tools.push(t);
-      renderToolItem(t);
+      toolList.innerHTML+=`
+      <div class="tool-item">
+        <span>${t.name}</span>
+        <div>
+          <button class="btn btn-sm btn-${t.status?'warning':'success'}"
+            onclick="toggleStatus('${t.key}',${t.status})">
+            ${t.status?'Deactivate':'Activate'}
+          </button>
+          <button class="btn btn-sm btn-danger ms-1"
+            onclick="deleteTool('${t.key}')">Delete</button>
+        </div>
+      </div>`;
     });
-    total-tools.innerText=tools.length;
-    active-tools.innerText=tools.filter(t=>t.status).length;
-    deactivated-tools.innerText=tools.filter(t=>!t.status).length;
+    totalTools.innerText=tools.length;
+    activeTools.innerText=tools.filter(t=>t.status).length;
+    deactivatedTools.innerText=tools.filter(t=>!t.status).length;
   });
-}
-
-function renderToolItem(t){
-  tool-list.innerHTML+=`
-  <div class="tool-item">
-    <span>${t.name}</span>
-    <div>
-      <button class="btn btn-sm btn-${t.status?'warning':'success'}"
-        onclick="toggleStatus('${t.key}',${t.status})">
-        ${t.status?'Deactivate':'Activate'}
-      </button>
-      <button class="btn btn-sm btn-danger ms-1"
-        onclick="deleteTool('${t.key}')">Delete</button>
-    </div>
-  </div>`;
 }
 
 function addTool(){
@@ -173,21 +177,24 @@ function loadVisitors(){
   db.ref("visitors").on("value",snap=>{
     allVisitors=[];
     snap.forEach(c=>allVisitors.push({date:c.key,count:c.val().count}));
-    total-visitors.innerText=allVisitors.reduce((a,b)=>a+b.count,0);
+    totalVisitors.innerText=allVisitors.reduce((a,b)=>a+b.count,0);
     drawChart(7);
   });
 }
 function drawChart(days){
   const now=new Date();
   const data=allVisitors.filter(d=>(now-new Date(d.date))/(86400000)<=days);
-  if(visitorChart)visitorChart.destroy();
-  visitorChart=new Chart(visitorChart,{
+  if(visitorChart) visitorChart.destroy();
+  visitorChart=new Chart(visitorCanvas,{
     type:"line",
-    data:{labels:data.map(d=>d.date),datasets:[{data:data.map(d=>d.count),borderColor:"#8b5cf6"}]}
+    data:{
+      labels:data.map(d=>d.date),
+      datasets:[{data:data.map(d=>d.count),borderColor:"#8b5cf6",fill:false}]
+    }
   });
 }
-function updateChartFilter(){drawChart(visitor-filter.value);}
+function updateChartFilter(){drawChart(visitorFilter.value);}
 </script>
 
 </body>
-</html>
+      </html>
