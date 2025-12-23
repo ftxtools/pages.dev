@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" href="./fav.png">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+/* ❌ NO DESIGN CHANGE */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Inter:wght@400;600&display=swap');
+:root{--bg-base:#121212;--text-primary:#e0e0e0}
+body{background:var(--bg-base);color:var(--text-primary);font-family:Inter;margin:0}
+.taskbar{background:#000;color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center}
+.taskbar img{width:35px;margin-right:10px}
+.text-gradient{background:linear-gradient(90deg,#8b5cf6,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.card-box{background:#1e1e1e;border:1.5px solid #fff;border-radius:16px;padding:16px;margin-bottom:20px}
+input,select{border-radius:14px!important;border:1.5px solid #fff!important;background:#121212;color:#e0e0e0}
+button{border-radius:12px!important}
+.tool-item{background:#1e1e1e;border:1.5px solid #fff;border-radius:14px;padding:10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.site-footer{text-align:center;padding:20px;color:#fff;border-top:1px solid #444;margin-top:30px}
+</style>
+</head>
+
+<body>
+
+<div class="taskbar">
+  <div class="d-flex align-items-center">
+    <img src="https://ftxtools.pages.dev/FTX_OFFICIAL.PNG">
+    <span style="font-size:22px">FTX <span class="text-gradient">OFFICIAL</span></span>
+  </div>
+  <button id="logout-btn" class="btn btn-danger" style="display:none;">Logout</button>
+</div>
+
+<main class="container py-4">
+
+<center>
+<span style="font-size:45px">FTX <span class="text-gradient">ADMIN</span></span>
+<p style="font-size:15px;">Welcome Back to the FTX Admin Dashboard – Manage with Ease.</p>
+</center>
+
+<!-- LOGIN -->
+<div id="login-screen" class="card-box mx-auto" style="max-width:400px;">
+  <h4 class="mb-3 text-center">Admin Login</h4>
+  <input type="email" id="email" class="form-control mb-2" placeholder="Email">
+  <input type="password" id="password" class="form-control mb-3" placeholder="Password">
+  <button class="btn btn-dark w-100" onclick="login()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none;">
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card-box text-center"><h5 id="total-tools">0</h5>Total Tools</div></div>
+  <div class="col-md-3"><div class="card-box text-center"><h5 id="active-tools">0</h5>Active Tools</div></div>
+  <div class="col-md-3"><div class="card-box text-center"><h5 id="deactivated-tools">0</h5>Deactivated Tools</div></div>
+  <div class="col-md-3"><div class="card-box text-center"><h5 id="total-visitors">0</h5>Total Visitors</div></div>
+</div>
+
+<div class="card-box mb-4">
+  <h5>Visitors Chart</h5>
+  <select id="visitor-filter" class="form-select mb-2" style="max-width:200px;" onchange="updateChartFilter()">
+    <option value="7">Last 7 Days</option>
+    <option value="30">Last 30 Days</option>
+    <option value="90">Last 3 Months</option>
+    <option value="365">Last 1 Year</option>
+  </select>
+  <canvas id="visitorChart" height="150"></canvas>
+</div>
+
+<div class="card-box">
+  <h5 class="mb-3">Tools Manager</h5>
+  <div class="row g-2 mb-3">
+    <div class="col-md-4"><input id="tool-name" class="form-control" placeholder="Tool Name"></div>
+    <div class="col-md-4"><input id="tool-img" class="form-control" placeholder="Image URL"></div>
+    <div class="col-md-4"><input id="tool-link" class="form-control" placeholder="Tool Link"></div>
+  </div>
+  <button class="btn btn-dark mb-3" onclick="addTool()">Add Tool</button>
+  <div id="tool-list"></div>
+</div>
+
+</div>
+</main>
+
+<footer class="site-footer">© 2025 FTX OFFICIAL</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+
+<script>
+/* 🔥 FIREBASE */
+firebase.initializeApp({
+  apiKey:"YOUR_API_KEY",
+  authDomain:"YOUR_PROJECT.firebaseapp.com",
+  databaseURL:"https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId:"YOUR_PROJECT",
+  appId:"YOUR_APP_ID"
+});
+
+const auth=firebase.auth();
+const db=firebase.database();
+
+const loginScreen=document.getElementById("login-screen");
+const dashboard=document.getElementById("dashboard");
+const logoutBtn=document.getElementById("logout-btn");
+
+/* AUTH */
+auth.onAuthStateChanged(user=>{
+  loginScreen.style.display=user?"none":"block";
+  dashboard.style.display=user?"block":"none";
+  logoutBtn.style.display=user?"inline-block":"none";
+  if(user){loadTools();loadVisitors();}
+});
+
+function login(){
+  auth.signInWithEmailAndPassword(email.value,password.value)
+  .catch(e=>alert(e.message));
+}
+logoutBtn.onclick=()=>auth.signOut();
+
+/* TOOLS – 🔗 PUBLIC LINKED (status) */
+let tools=[];
+function loadTools(){
+  db.ref("tools").on("value",snap=>{
+    tools=[];
+    tool-list.innerHTML="";
+    snap.forEach(c=>{
+      const t=c.val(); t.key=c.key;
+      tools.push(t);
+      renderToolItem(t);
+    });
+    total-tools.innerText=tools.length;
+    active-tools.innerText=tools.filter(t=>t.status).length;
+    deactivated-tools.innerText=tools.filter(t=>!t.status).length;
+  });
+}
+
+function renderToolItem(t){
+  tool-list.innerHTML+=`
+  <div class="tool-item">
+    <span>${t.name}</span>
+    <div>
+      <button class="btn btn-sm btn-${t.status?'warning':'success'}"
+        onclick="toggleStatus('${t.key}',${t.status})">
+        ${t.status?'Deactivate':'Activate'}
+      </button>
+      <button class="btn btn-sm btn-danger ms-1"
+        onclick="deleteTool('${t.key}')">Delete</button>
+    </div>
+  </div>`;
+}
+
+function addTool(){
+  if(!tool-name.value||!tool-img.value||!tool-link.value) return;
+  db.ref("tools").push({
+    name:tool-name.value,
+    img:tool-img.value,
+    link:tool-link.value,
+    status:true
+  });
+  tool-name.value=tool-img.value=tool-link.value="";
+}
+function toggleStatus(k,s){db.ref("tools/"+k).update({status:!s});}
+function deleteTool(k){confirm("Delete?")&&db.ref("tools/"+k).remove();}
+
+/* VISITORS */
+let visitorChart,allVisitors=[];
+function loadVisitors(){
+  db.ref("visitors").on("value",snap=>{
+    allVisitors=[];
+    snap.forEach(c=>allVisitors.push({date:c.key,count:c.val().count}));
+    total-visitors.innerText=allVisitors.reduce((a,b)=>a+b.count,0);
+    drawChart(7);
+  });
+}
+function drawChart(days){
+  const now=new Date();
+  const data=allVisitors.filter(d=>(now-new Date(d.date))/(86400000)<=days);
+  if(visitorChart)visitorChart.destroy();
+  visitorChart=new Chart(visitorChart,{
+    type:"line",
+    data:{labels:data.map(d=>d.date),datasets:[{data:data.map(d=>d.count),borderColor:"#8b5cf6"}]}
+  });
+}
+function updateChartFilter(){drawChart(visitor-filter.value);}
+</script>
+
+</body>
+</html>
